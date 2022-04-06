@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -38,7 +39,7 @@ public class MainManager : MonoBehaviour
             }
         }
 
-        UpdateHighScoreText(DataManager.Instance.highScoreName, DataManager.Instance.highScore);
+        UpdateHighScoreText();
     }
 
     private void Update()
@@ -75,9 +76,10 @@ public class MainManager : MonoBehaviour
         ScoreText.text = $"Score : {m_Points}";
     }
 
-    void UpdateHighScoreText(string name, int score)
+    void UpdateHighScoreText()
     {
-        HighScoreText.text = $"Best Score : {name} : {score}";
+        HighScore highScore = DataManager.Instance.highScores.First();
+        HighScoreText.text = $"Best Score : {highScore.name} : {highScore.score}";
     }
 
     public void GameOver()
@@ -85,13 +87,16 @@ public class MainManager : MonoBehaviour
         m_GameOver = true;
         GameOverText.SetActive(true);
 
-        if (m_Points > DataManager.Instance.highScore)
-        {
-            DataManager.Instance.highScoreName = DataManager.Instance.playerName;
-            DataManager.Instance.highScore = m_Points;
-            
-            UpdateHighScoreText(DataManager.Instance.highScoreName, DataManager.Instance.highScore);
-        }
+        // Add to high scores list
+        DataManager.Instance.highScores.Add(new HighScore(DataManager.Instance.playerName, m_Points));
         
+        // Sort
+        DataManager.Instance.SortHighScores();
+        
+        // Get top 10, assign to datamanager instance
+        DataManager.Instance.FilterHighScores();
+        
+        UpdateHighScoreText();
+
     }
 }

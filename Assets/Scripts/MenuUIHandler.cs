@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 
 #if UNITY_EDITOR
@@ -20,10 +21,9 @@ public class MenuUIHandler : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string playerName = DataManager.Instance.highScoreName;
-        int score = DataManager.Instance.highScore;
-        
-        bestScoreText.text = $"Best Score : {playerName} : {score}";
+        HighScore highScore = DataManager.Instance.highScores.First();
+
+        bestScoreText.text = $"Best Score : {highScore.name} : {highScore.score}";
     }
 
     // Update is called once per frame
@@ -42,10 +42,15 @@ public class MenuUIHandler : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    public void ViewHighScores()
+    {
+        SceneManager.LoadScene(2);
+    }
+
     public void Exit()
     {
         // Save High Score
-        DataManager.Instance.SaveHighScore();
+        DataManager.Instance.SaveHighScores();
         
 #if UNITY_EDITOR
         EditorApplication.ExitPlaymode();

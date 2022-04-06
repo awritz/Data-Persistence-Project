@@ -2,14 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class DataManager : MonoBehaviour
 {
     public static DataManager Instance;
-    
-    public string highScoreName = "TBD";
-    public int highScore = 0;
+
+    public List<HighScore> highScores;
 
     public string playerName; 
     
@@ -25,41 +25,53 @@ public class DataManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         
-        // Load high score and user
-        LoadHighScore();
+        // Load high scores and users
+        LoadHighScores();
     }
     
     [Serializable]
     class SaveData
     {
-        public string highScoreName;
-        public int highScore;
+        public List<HighScore> highScores;
     }
 
-    public void SaveHighScore()
+    public void SaveHighScores()
     {
         SaveData data = new SaveData();
-        data.highScore = highScore;
-        data.highScoreName = highScoreName;
+        data.highScores = highScores;
 
         string json = JsonUtility.ToJson(data);
         
-        File.WriteAllText(Application.persistentDataPath + "/highscore.json", json);
+        File.WriteAllText(Application.persistentDataPath + "/highscores.json", json);
     }
 
-    public void LoadHighScore()
+    public void LoadHighScores()
     {
-        string path = Application.persistentDataPath + "/highscore.json";
-
+        string path = Application.persistentDataPath + "/highscores.json";
+        
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
 
             SaveData data = JsonUtility.FromJson<SaveData>(json);
 
-            highScore = data.highScore;
-            highScoreName = data.highScoreName;
+            highScores = data.highScores;            
+            
+            SortHighScores();
+        }
+        else
+        {
+            highScores = new List<HighScore> {new HighScore("TBD", 0)};
         }
     }
 
+    public void SortHighScores()
+    {
+        highScores = highScores.OrderByDescending(o=>o.score).ToList();
+    }
+
+    public void FilterHighScores()
+    {
+        highScores = highScores.GetRange(0, Math.Min(highScores.Count, 10));
+    }
 }
